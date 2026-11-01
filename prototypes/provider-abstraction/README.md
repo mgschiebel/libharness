@@ -62,7 +62,7 @@ Events are the narrow waist: `Text`, `ToolCall{index,id?,name?,args-fragment}`, 
 | Shared, written once | `types.rs` 150, `assembler.rs` 98, `sse.rs` 72 (the SSE parser is shared only by SSE integrations; stub does not use it) |
 | Driver + callback + transport traits | 75 lines (`provider-adapter/src/lib.rs`) |
 | Tests | 275 lines, 14 tests |
-| Dependencies | codec: `serde_json` (alloc) -> serde_core, itoa, memchr, zmij (5 crates incl. itself excluded: 4 external). Adapter: codec only. Dev: `futures`. |
+| Dependencies | codec: `serde_json` (alloc) -> 4 external crates in total: serde_core, itoa, memchr, zmij. Adapter: codec only. Dev: `futures`. |
 
 ## What leaks through the trait (the trait is clean; the types around it are not)
 

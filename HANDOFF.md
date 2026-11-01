@@ -1,12 +1,18 @@
 # libharness handoff
 
-Written 2026-11-01. A Rust library embedding an LLM agent harness. Planning is driven by the `/wayfinder` skill (Matt Pocock's skills, installed in `.claude/skills/`). Repo: https://github.com/mgschiebel/libharness. No Rust crate exists on `main` yet; only research docs and planning.
+Written 2026-11-01 (second session of the day). A Rust library embedding an LLM agent harness. Planning is driven by the `/wayfinder` skill (Matt Pocock's skills, installed in `.claude/skills/`). Repo: https://github.com/mgschiebel/libharness. No Rust crate exists on `main` yet; only research docs and planning. Prototypes live on branches.
+
+## Start of a new session
+
+1. Attach the repo with **push access from the start** (`mgschiebel/libharness`), clone it once (shallow is fine, give the clone a long timeout), then register the repo root so `CLAUDE.md` loads.
+2. Read this file, then the map (issue #1). Read `.claude/skills/wayfinder/SKILL.md` directly; `/wayfinder` may not exist as a slash command.
+3. Work through the map. Claim a ticket (assign it) before any work. Never resolve more than one ticket per session, except research tickets and AFK prototypes fired as subagents.
 
 ## Where the plan lives
 
-- **Map:** GitHub issue #1, "Map: libharness first public release spec". It holds the Destination, Notes (standing rules and leanings), Decisions so far, Not yet specified, and Out of scope. Read it first.
-- Tickets are child issues of the map, linked with native sub-issues and native blocking.
-- `gh` GraphQL is blocked in these sessions. Use REST: `gh api repos/mgschiebel/libharness/...`.
+- **Map:** GitHub issue #1, "Map: libharness first public release spec". It holds Destination, Notes (standing rules and leanings), Decisions so far, Not yet specified and Out of scope. Read it first. The map is edited by one writer, the coordinating session; resolvers post a comment and close, and the coordinator appends the Decisions line.
+- Tickets are child issues of the map (native sub-issues, native blocking).
+- `gh` GraphQL is blocked in these sessions. Use REST: `gh api repos/mgschiebel/libharness/...`. Sub-issues: `POST issues/1/sub_issues -F sub_issue_id=<issue id>`. Blocking: `POST issues/N/dependencies/blocked_by -F issue_id=<issue id>`. Open blockers: `GET issues/N/dependencies/blocked_by`.
 
 ## Destination
 
@@ -15,92 +21,80 @@ A written spec for the first public release of libharness, ready to hand off for
 ## User's standing rules (also in the map Notes)
 
 1. Decisions are data driven. Research tickets must link primary sources.
-2. **Rounds.** The flow per topic is research → prototype → recommend → grilling (see "The round model" below). Research clarifies what to prototype, and its last act is to plan the round.
-3. Grilling is only for identifying fog and for deciding, at the wider scope, from the recommendation.
-4. Smart blocking: a grilling ticket is blocked by the recommend ticket on its own topic (or by the research ticket directly when no prototypes were worth building).
-5. Ask questions inline in chat as plain text. Never use menu or multiple-choice tools (voice-to-text user). This is also in `CLAUDE.md`.
-6. A research ticket closes only after its findings are rebased onto `main` under `research/` AND its `research/<name>` branch is deleted. The sandbox proxy cannot delete remote branches, so the human does it.
-7. Handoff and planning documents are plain Markdown files, not docs.
+2. **Rounds.** Per topic: research → prototype → recommend → grilling.
+3. Grilling decides at the wider scope, from the recommendation.
+4. Smart blocking: a grilling ticket is blocked by the recommend ticket on its own topic only.
+5. Ask questions inline in chat as plain text. Never use menu or multiple-choice tools (voice-to-text user). Also in `CLAUDE.md`.
+6. A research ticket closes only after its findings are on `main` under `research/` AND its `research/<name>` branch is deleted. The sandbox proxy cannot delete remote branches, so the human does it.
+7. **Concepts only, no copied code** from other projects (rig, genai, swiftide, Pi), because of licence pollution and unverified licence compatibility.
+8. Handoff and planning documents are plain Markdown files, not docs.
 
 ## The round model
 
-Agreed 2026-11-01. Written into the map Notes (rules 2 to 4), `.claude/skills/wayfinder/SKILL.md` (Rounds section) and `docs/agents/issue-tracker.md`.
+Four roles, one label each: `wayfinder:research`, `wayfinder:prototype`, `wayfinder:recommend`, `wayfinder:grilling`. Written into the skill, `docs/agents/issue-tracker.md` and the map Notes.
 
-Four roles, one label each: `wayfinder:research`, `wayfinder:prototype`, `wayfinder:recommend`, `wayfinder:grilling`.
+- **Research (AFK)** gathers primary sources. Its last act is to plan the round: prototype tickets (each with a brief), one recommend ticket blocked by them, and the topic's grilling ticket blocked by the recommend ticket.
+- **Prototype (AFK)** builds only. If it needs steering it parks (commit, comment, `awaiting-answer`, exit).
+- **Recommend (HITL)** has two modes. *Triage:* takeable while any ticket in its round is `awaiting-answer`. *Decision:* all blockers closed; read every output, draft a recommendation, grill the human to a mutual topic-level recommendation, post it as the resolution comment, close. It may add research or prototype tickets inside its round, wired as blockers with a comment saying why.
+- **Grilling (HITL)** decides at the wider scope and is the writer to the map (Decisions so far, graduating fog).
+- **Clear-cut skip (revised 2026-11-01).** Grilling is the default and **the agent never raises the skip or asks whether a topic is clear-cut**. Only the human may invoke it, in decision mode, and only if every prototype in the round reported no surprises and nothing touches another topic. The recommend resolution comment lists the surprises found, or says "none". Reason: every round so far has turned up something unexpected, and topic-level sessions cannot see cross-topic effects.
 
-1. **Research (AFK)** gathers primary sources. Its last act is to plan the round from the leading results: one prototype ticket per leading candidate per genuine uncertainty (skip any that would not change a decision), each with a brief (the question, what "validated" means, what to measure) and blocked by the research ticket; one recommend ticket blocked by all of those prototypes; and the topic's grilling ticket blocked by the recommend ticket. The number of prototypes is fog until research closes, so they are never pre-created. If nothing is worth prototyping, there is no recommend ticket and grilling is blocked by research directly.
-2. **Prototype (AFK)** builds only. If it needs steering mid-build it parks: it commits to its branch, comments the question, adds the `awaiting-answer` label and exits. After the answer is posted a fresh subagent resumes it from the branch and the comments.
-3. **Recommend (HITL)** is the human's interface to the round, with two modes on one ticket:
-   - *Triage:* natively blocked, but takeable whenever any ticket in its round has `awaiting-answer`. Grill the human on those questions, comment the answers on the waiting tickets, remove the label, resume the subagents, release the claim. The ticket stays open.
-   - *Decision:* all blockers closed. Read every output, draft a recommendation, grill the human to a mutual topic-level recommendation ("which candidate, and why"), post it as the resolution comment, close.
-   - Either mode may create research or prototype tickets inside its round, wired as blockers of the recommend ticket with a comment saying why. That is also how a failed round gets a second batch.
-4. **Grilling (HITL)** decides at the wider scope (across topics, fog), starting from the recommendation. It does not re-ask what was settled but can overturn it. It is the writer to the map: it appends to Decisions so far and graduates fog.
-
-The agent recommends; only the human decides. **Clear-cut skip:** if the human (never the agent) declares a topic clear-cut in the recommend session, recommend writes the Decisions-so-far line itself and closes the grilling ticket with "resolved by recommend". The default is that grilling runs.
-
-Because HITL reactions now live in recommend and grilling, an unreachable-user prototype is the normal case. Upstream's `prototype` skill already allows this ("if the user isn't reachable, default to ... and state the assumption") and is unchanged.
+How a grilling round is run (from the `grilling` skill): number the frontier questions, give a recommended answer for each, word each so "yes" accepts it, then wait.
 
 ## Ticket status
 
+Closed so far: research #2 (Pi SDK), #3 (OpenRouter API), #4 (sans-IO in Rust), #5 (Rust LLM landscape), #18 (no-I/O enforcement); prototypes #6 (sans-IO host), #10 (rig), #19 (session-as-task), #22 (no_std gate), #23 (std enforcement stack), #26 (sans-IO core inside the session loop), #27 (no_std core in a std host); recommend #15 (build vs adopt).
+
+Open:
+
 | # | Ticket | State |
 |---|--------|-------|
-| 2 | Research: Pi SDK and agent-loop architecture | closed, `research/pi-sdk.md` |
-| 3 | Research: OpenRouter API surface | closed, `research/openrouter-api.md` |
-| 4 | Research: sans-IO design in Rust | closed, `research/sans-io-rust.md` |
-| 5 | Research: Rust LLM crate landscape | closed, `research/rust-llm-landscape.md` |
-| 6 | Prototype: sans-IO host interface | closed; branch `prototype/sans-io-host` |
-| 7 | Prototype: provider abstraction over OpenRouter | open, unblocked, not started (AFK; brief added) |
-| 10 | Prototype: rig against libharness requirements | open; built on branch `prototype/rig`. Under the round model its work is done; close it once the user agrees, which unblocks #15 |
-| 15 | Recommend: build vs adopt | open, blocked by #10 |
-| 16 | Recommend: provider abstraction | open, blocked by #7 |
-| 11 | Grill: build vs adopt | open, blocked by #15; also blocks #8 and #9 |
-| 8 | Grill: host-interface shape | open, blocked by #11 (its research and prototype, #2, #4, #6, are closed; no recommend ticket was needed) |
-| 9 | Grill: provider abstraction | open, blocked by #11 and #16 |
+| 24 | Recommend: no-I/O enforcement mechanism | **takeable now**, decision mode, all prototypes closed |
+| 20 | Recommend: session-as-task model | **takeable now**, decision mode; triage with the human already done |
+| 11 | Grill: build vs adopt | **takeable now**; starts from the #15 recommendation; also blocks #8 and #9 |
+| 7 | Prototype: provider abstraction over OpenRouter | AFK, unblocked, not started (brief added) |
+| 16 | Recommend: provider abstraction | blocked by #7 |
+| 21 | Grill: session boundaries, continuity and spawning | blocked by #20 |
+| 25 | Grill: no-I/O enforcement policy and crate layout | blocked by #24 |
+| 8 | Grill: host-interface and capability shape | blocked by #11 and #20 |
+| 9 | Grill: provider abstraction | blocked by #11 and #16 |
 
-Findings in brief:
-- **Pi:** two layers. Core is nested loops with hooks and steering/follow-up queues. The coding-agent layer adds append-only tree sessions, compaction as appended summaries, and about 40 extension events.
+Nothing is claimed at the time of writing.
+
+## Findings in brief
+
+Full detail is in each closed ticket and on the prototype branches (README in each prototype directory).
+
+- **Pi:** two layers. Core is nested loops with hooks and steering/follow-up queues; the coding-agent layer adds append-only tree sessions, compaction and about 40 extension events.
 - **OpenRouter:** OpenAI-shaped Chat Completions plus extras. SSE has comment lines to skip, and errors can arrive mid-stream inside an HTTP 200. Streaming tool-call delta format is unverified.
-- **Sans-IO:** synchronous state machine, explicit `now`, `poll_*` outputs. No primary source for sans-IO LLM agents; that mapping is inference.
-- **Crate landscape:** provider clients are well covered (genai, async-openai, rig-core). Loops only ship bundled with their own provider layer. rig and swiftide overlap most.
-- **Sans-IO prototype:** ~420-line core, 10 passing tests, host loops of 35 (core), 66 (sync) and 86 (tokio) lines. Recommended a sans-IO core plus a thin optional driver.
-- **Rig prototype:** recommends building from scratch. rig's `AgentRun` has no way to inject a message mid-run, so steering is missing; the normal `Agent` does side effects itself, which conflicts with "host owns side effects". The user has not yet confirmed.
+- **Crate landscape:** provider clients are well covered (genai, async-openai, rig-core). Agent loops only ship bundled with their own provider layer.
+- **Build vs adopt (#15, recommended 2026-11-01):** build the core from scratch; no upstream contribution; concepts only, no copied code; whether the optional std-side OpenRouter adapter reuses genai or async-openai is left to the provider tickets. Grilling #11 runs.
+- **Session-as-task (#19):** about 510 lines, serde and serde_json only, same 9 scenarios on tokio, futures-executor ThreadPool and LocalPool. Boxed `Send + Sync + 'static` callbacks; handle with abort, steer, follow-up; host-supplied JSON schema becomes a `final_answer` tool; spawn is an ordinary callback; `CancelToken` with sync hooks plus a "poll once more after cancel" guarantee; no timers in the library. Branch `prototype/session-task`.
+- **Sans-IO core inside the loop (#26):** works (9 scenarios on two executors, 13 pure-logic tests with a fake clock), but costs more than guessed: library 513 to 719 lines, translation layer about 300 lines (not 35 to 90). The plain async loop is simpler to read; the sans-IO engine is simpler to test, though about 130 lines (abort final-poll, cancel hooks) still need an executor. The core could not express "the answer ends the run" (9-line patch), and steering diverged slightly (queued steers arrive one per turn, a steer before the first poll arrives a turn late). Branch `prototype/session-core`.
+- **No-I/O research (#18):** no single mechanism proves no-I/O; layers do. rig-core, genai and swiftide fail a dependency-allowlist check. Findings: `research/no-io-enforcement.md`.
+- **no_std gate (#22):** core builds `#![no_std]` + `alloc` + `forbid(unsafe_code)` under `cargo check --target wasm32v1-none` with serde, serde_json, schemars, thiserror, futures-core, tracing, hashbrown, spin. 27 external crates, 29-name allowlist, cold check 24 s. The CI script fails on every injected escape; probe wasm has zero imports. cargo-deny does not check build scripts in workspace members (separate script needed). Branch `prototype/no-io-nostd`.
+- **std stack (#23):** `forbid` + generated clippy denylist (275 entries) + cargo-deny allowlist still misses 9 of 29 red-team escapes (unlisted std items, I/O in allowlisted deps, build scripts and proc macros, safe FFI wrappers, `clippy.toml` edits, test targets). Branch `prototype/no-io-std-stack`.
+- **no_std core in a std host (#27):** works with real file and socket I/O on tokio and futures-executor; 64 parallel sessions fine, `spin` and `std` mutex throughput indistinguishable. The authoritative gate stays `cargo check -p nostd-core --target wasm32v1-none`; a native build with the host selected turns `std` on in the core's serde_json, and a workspace-wide wasm check fails. Branch `prototype/no-io-nostd-host`.
 
-## Current design thinking (provisional, from the latest discussion)
+## Current design thinking (provisional until grilling decides)
 
-The user described a sandboxed library model, not yet reflected in the map:
-
-- The library does **no I/O of its own**. It reaches the outside world only through host-registered callbacks. Tools, skills, plugins, options and **the model call itself** are all registered capabilities. This also keeps credentials away from the model side and allows different models per session.
-- The host registers capabilities up front. It then starts a **session** with a prompt. A session is an independent task (thread) that the host spawns and then carries on; the host hears back only when the session calls a host callback. The host does not wait on it.
-- A session owns its own turn loop and runs to a natural end, or until the host ends it. A new prompt is a new session. Sessions can run in parallel.
-- Sub-agents are child sessions. The library needs a way to spawn them.
-- The host keeps live control: end/abort, plus steering and follow-up messages through a session handle.
-- Callbacks are async Rust futures, and the library should be runtime-neutral. The user wants this prototyped.
-- The user wants **technical enforcement** of "no I/O" from the start (not just convention). WASM is a possible later step.
-- This is not a hook-driven loop. It is closer to actors or spawned tasks with injected capabilities. The sans-IO state machine can still be the session engine inside, with the session runner as the "ergonomic driver".
-
-Unanswered questions I put to the user at the end of the session:
-- **Continuity:** a session keeps its conversation state while running; the host stores it outside (via a persist callback or the final transcript); a later session is seeded from what the host stored. Is that right? (The user said this was fog and wanted to discuss.)
-- **Spawning:** should spawning be a host-provided capability, so the library stays executor-neutral? Recommended yes.
-- Go-ahead to reshape the map as below.
+- The library does **no I/O**; it reaches the outside world only through host-registered async callbacks (tools, skills, plugins, options, and the model call itself). Technically enforced from the start; the evidence so far favours the `no_std` + `alloc` gate over the std denylist stack.
+- The host registers capabilities, then starts a **session** with a prompt; a session is an independent task with its own turn loop, running to a natural end or until the host aborts it. Sessions run in parallel. Sub-agents are child sessions started through a host-provided spawn callback.
+- Library only; no host-side driving loop is in scope. User's working assumptions on continuity and spawning (sessions short-running, not persisted, host passes typed results and new prompts) are in the map Notes and go to Grill #21.
 
 ## Next steps
 
-0. The round model above is done: skill, tracker doc, map Notes, labels (`wayfinder:recommend`, `awaiting-answer`), recommend tickets #15 and #16, and the blocking rewiring. Still to decide: whether to close #10 (see table).
-1. Get the user's answers on continuity and spawning, and their reaction to the rig prototype (#10) in the recommend ticket #15. The prototype's recommendation is to build from scratch.
-2. Reshape the map: rewrite Notes and provisional leanings to the session-as-task model; reconsider the Pi-style "no sub-agents in core" leaning, which the session model reverses. Rename or reshape "Grill: host-interface shape" (#8) around it.
-3. Add tickets:
-   - Prototype: session-as-task with injected async capabilities, run on two executors to prove runtime neutrality.
-   - Research: technical enforcement of "no I/O" in a Rust crate (dependency allowlist, clippy `disallowed-*`, cargo-deny, CI checks, capability patterns).
-   - Grill: session boundaries and continuity (including host-owned spawning).
-   - Wire blocking by topic, per the rules, using the round model: each new prototype gets a brief and a recommend ticket, and the grilling ticket is blocked by that recommend ticket.
-4. Run the OpenRouter provider prototype (#7). With the model call now a host callback, reframe it as an optional adapter. Then close #10 and run "Grill: build vs adopt" (#11).
-5. Move closed prototype findings into the map's Decisions so far as tickets close. Fog to graduate later: async runtime and streaming, sessions (tree structure, storage), steering, built-in tools, compaction and skills, AGENTS.md, MCP, errors, testing, crate layout, MSRV, licence, release criteria.
+1. **Recommend: no-I/O enforcement mechanism (#24).** Decision mode. The evidence leans to the `no_std` gate (#22, #27) with the std stack (#23) as a fallback. Every prototype reported surprises, so no clear-cut skip. After it, Grill #25 (policy and crate layout).
+2. **Recommend: session-as-task model (#20).** Decision mode. Already accepted in triage: session-as-task shape, boxed Send callbacks (`?Send` is fog), cancel token with sync hooks plus the extra-poll guarantee, no timers in the library, host-supplied schema, streaming left unspecified. Remaining decision: the session engine, plain async loop versus sans-IO core inside it (evidence from #26 above). Then Grill #21 and Grill #8.
+3. **Grill: build vs adopt (#11)**, starting from the #15 recommendation.
+4. **Run #7** (OpenRouter provider prototype, AFK, reframed as an optional std-side adapter). Needs a free slot: at most two concurrent git operations on this repo; use `git worktree` from the existing clone instead of cloning. It unblocks Recommend #16.
+5. Move decisions into the map's Decisions so far as grilling tickets close. Fog to graduate later is listed in the map under Not yet specified: runtime and streaming, `?Send` flavour, capability registry, session history, mid-run control, built-in tools, context features, MCP, errors, testing, crate layout, MSRV, licence, release criteria.
+6. Refresh the user's memory notes if they look stale (they predate tickets 18 to 27).
 
 ## Housekeeping and gotchas
 
-- **Stale remote branches:** `research/pi-sdk`, `research/openrouter-api`, `research/sans-io-rust`, `research/rust-llm-landscape` are fully merged into `main` but could not be deleted from the sandbox. Delete them: `git push origin --delete research/pi-sdk research/openrouter-api research/sans-io-rust research/rust-llm-landscape`.
-- **Prototype branches** (kept as assets): `prototype/sans-io-host` (`prototypes/sans-io-host/`) and `prototype/rig` (`prototypes/rig/`). Never merged to `main`.
-- Remote branch deletion and `gh` GraphQL are blocked by the sandbox proxy. Concurrent git operations on this repo are capped at two; on HTTP 429, wait and retry once.
-- The map is edited by one writer at a time (the coordinating session) to avoid conflicts: resolvers post a comment and close, and the coordinator appends to Decisions so far.
-- The `/wayfinder` command may not appear as a slash command in a session. The skill lives at `.claude/skills/wayfinder/SKILL.md`; read and follow it directly.
-- Triage labels (`needs-triage`, etc.) exist in the repo but map tickets carry only `wayfinder:*` labels.
+- **Remote branches** now on origin: `main` and prototype branches `prototype/rig`, `prototype/sans-io-host`, `prototype/session-task`, `prototype/no-io-nostd`, `prototype/no-io-std-stack`, `prototype/no-io-nostd-host`, `prototype/session-core`. All prototype branches are kept as assets and never merged. No stale `research/*` branches remain.
+- Remote branch deletion and `gh` GraphQL are blocked by the sandbox proxy. Concurrent git operations on this repo are capped at two; on HTTP 429 wait 5 seconds and retry once. Shallow clones: fetch with an explicit refspec (`git fetch origin <branch>:refs/remotes/origin/<branch>`).
+- AFK prototype subagents work in their own `git worktree` off the main clone, never in the main checkout.
+- `GLOSSARY.md` and `docs/adr/` do not exist yet; domain-modeling creates them lazily. No ADR has been offered yet.
+- Triage labels (`needs-triage`, etc.) exist in the repo but map tickets carry only `wayfinder:*` labels, plus the transient `awaiting-answer`.

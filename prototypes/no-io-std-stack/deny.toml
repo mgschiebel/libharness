@@ -1,0 +1,45 @@
+# PROTOTYPE allowlist for the no-I/O core. Names only; a reviewer must judge each crate.
+[graph]
+all-features = false
+
+[bans]
+multiple-versions = "allow"
+wildcards = "deny"
+allow-wildcard-paths = false
+allow-workspace = true
+# non-empty `allow` => every crate not listed is denied
+allow = [
+    { crate = "itoa" },
+    { crate = "memchr" },
+    { crate = "proc-macro2" },
+    { crate = "quote" },
+    { crate = "serde" },
+    { crate = "serde_core" },
+    { crate = "serde_derive" },
+    { crate = "serde_json" },
+    { crate = "syn" },
+    { crate = "unicode-ident" },
+    { crate = "zmij" },
+]
+[bans.workspace-dependencies]
+duplicates = "deny"
+unused = "allow"
+
+# build scripts are arbitrary host code: only these may have one (R5)
+[bans.build]
+allow-build-scripts = [
+    { name = "serde" },
+    { name = "serde_core" },
+    { name = "serde_json" },
+    { name = "proc-macro2" },
+    { name = "zmij" },
+    { name = "quote" },
+    { name = "memchr" },
+]
+executables = "deny"
+interpreted = "deny"
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]

@@ -1,0 +1,13 @@
+# PROTOTYPE (issue #23), throwaway. std core crate under three enforcement layers.
+[workspace]
+resolver = "2"
+members = ["core"]
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+
+# forbid (not deny) so a contributor's #[allow] is a hard error
+[workspace.lints.clippy]
+disallowed_methods = "forbid"
+disallowed_types = "forbid"
+disallowed_macros = "forbid"

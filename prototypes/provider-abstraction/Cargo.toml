@@ -1,0 +1,3 @@
+[workspace]
+members = ["provider-codec", "provider-adapter"]
+resolver = "2"

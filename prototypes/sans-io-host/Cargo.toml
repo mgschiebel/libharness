@@ -1,0 +1,13 @@
+[package]
+name = "sans-io-host-proto"
+version = "0.0.0"
+edition = "2021"
+publish = false
+description = "PROTOTYPE, throwaway: sans-IO agent loop + toy hosts (libharness#6)"
+
+[dependencies]
+
+[dev-dependencies]
+tokio = { version = "1", features = ["rt", "macros", "time", "sync"] }
+
+[workspace]

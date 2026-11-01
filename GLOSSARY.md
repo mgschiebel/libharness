@@ -1,0 +1,29 @@
+# libharness
+
+A Rust library that embeds an LLM agent harness in a host application. The host drives it; the library never reaches the outside world on its own.
+
+## Language
+
+**Host**:
+The Rust application that embeds libharness, registers capabilities and starts sessions.
+_Avoid_: App, client, caller, embedder
+
+**Library**:
+libharness as a whole: the core plus everything shipped with it.
+_Avoid_: Framework, SDK, harness (when meaning the whole product)
+
+**Core**:
+The part of the library that performs no I/O of its own.
+_Avoid_: Engine, kernel
+
+**Capability**:
+Anything the host registers for sessions to use: a tool, skill, plugin or option, or the model call itself.
+_Avoid_: Provider, hook, integration
+
+**Session**:
+One independent run started by a prompt, with its own turn loop, ending naturally or when the host ends it.
+_Avoid_: Run, conversation, thread
+
+**Adapter**:
+An optional piece outside the core that turns an outside service into a capability, such as the OpenRouter adapter.
+_Avoid_: Provider layer, driver, connector

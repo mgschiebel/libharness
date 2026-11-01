@@ -1,0 +1,8 @@
+[package]
+name = "sans-io-core"
+version = "0.0.0"
+edition = "2021"
+publish = false
+description = "PROTOTYPE: sans-IO agent core, copied from prototype/sans-io-host (libharness#6) with a 3-hunk patch"
+
+[dependencies]

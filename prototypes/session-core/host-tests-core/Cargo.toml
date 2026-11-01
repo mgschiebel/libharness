@@ -1,0 +1,31 @@
+[package]
+name = "host-tests-core"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+# The SAME source files as ../host-tests (lib + tests), compiled against session-core
+# instead of session-task. `package = "session-core"` renames it back to `session_task`
+# so the scenarios compile byte-for-byte unchanged.
+[lib]
+name = "host_tests"
+path = "../host-tests/src/lib.rs"
+
+[[test]]
+name = "tokio_exec"
+path = "../host-tests/tests/tokio_exec.rs"
+[[test]]
+name = "futures_executor"
+path = "../host-tests/tests/futures_executor.rs"
+[[test]]
+name = "extra"
+path = "../host-tests/tests/extra.rs"
+
+[dependencies]
+session-task = { path = "../session-core", package = "session-core" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+futures = { version = "0.3", features = ["thread-pool"] }
+
+[dev-dependencies]
+tokio = { version = "1", features = ["rt-multi-thread", "macros"] }

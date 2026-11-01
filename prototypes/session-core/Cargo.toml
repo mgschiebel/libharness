@@ -1,0 +1,3 @@
+[workspace]
+resolver = "2"
+members = ["sans-io-core", "session-core", "session-task", "host-tests", "host-tests-core"]

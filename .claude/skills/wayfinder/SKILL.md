@@ -102,7 +102,7 @@ If nothing is worth prototyping, create no recommend ticket and block the grilli
 
 **Grilling after recommend.** The grilling ticket is the session that decides at the wider scope, across topics and fog, starting from the recommendation. It can overturn the recommendation but does not re-ask what was settled. It is the writer to the map: it appends to Decisions so far and graduates fog.
 
-**Clear-cut skip.** If, in decision mode, the **human** declares the recommendation clear-cut, the recommend session writes the Decisions-so-far line itself, graduates any fog it clears, and closes the grilling ticket with a comment "resolved by recommend". The agent never declares a topic clear-cut; the default is that grilling runs.
+**Clear-cut skip.** Grilling is the default and the agent never raises the skip or asks whether a topic is clear-cut: only the **human** may invoke it, in decision mode. It is allowed only when both hold: (1) every prototype in the round reported no surprises (its "Surprises" section is empty or only confirms expectations), and (2) nothing in the round touches another topic. Any surprise, or any cross-topic implication, sends the topic to grilling whatever anyone thinks of it. The recommend ticket's resolution comment must list the surprises found, or say "none", so the claim can be checked. When invoked and allowed, the recommend session writes the Decisions-so-far line itself, graduates any fog it clears, and closes the grilling ticket with a comment "resolved by recommend".
 
 ## Fog of war
 

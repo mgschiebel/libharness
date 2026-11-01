@@ -62,7 +62,7 @@ Each ticket is a **child issue** of the map; the tracker's issue id is its ident
 <the decision or investigation this ticket resolves>
 ```
 
-Each ticket carries a `wayfinder:<type>` label, one of `research`, `prototype`, `grilling`, `task` (see [Ticket Types](#ticket-types)). `wayfinder:` labels are the only labels a map and its tickets carry, never a triage label like `ready-for-agent`: they are decisions, not implementation work.
+Each ticket carries a `wayfinder:<type>` label, one of `research`, `prototype`, `recommend`, `grilling`, `task` (see [Ticket Types](#ticket-types)). A ticket may also carry the transient `awaiting-answer` label (see [Rounds](#rounds)). `wayfinder:` labels are the only labels a map and its tickets carry, never a triage label like `ready-for-agent`: they are decisions, not implementation work.
 
 A session **claims** a ticket by assigning it to the dev driving the map, **first**, before any work, so concurrent sessions skip it. That assignee _is_ the claim: an open, unassigned ticket is unclaimed.
 
@@ -74,10 +74,35 @@ The answer isn't part of the body; it's recorded on resolution (see [Work throug
 
 Every ticket is either **HITL** (human in the loop, worked _with_ a human who speaks for themselves) or **AFK**, driven by the agent alone. A HITL ticket only resolves through that live exchange; the agent never stands in for the human's side of it (a grilling agent that answers its own questions has broken this).
 
-- **Research** (AFK): Reading documentation, third-party APIs, or local resources like knowledge bases to surface a fact a decision waits on. Resolved by a subagent that calls the Skill tool with "research". Use when knowledge outside the current working directory is required.
-- **Prototype** (HITL): Raise the fidelity of the discussion by making a cheap, rough, concrete artifact to react to (an outline, a rough take, a stub, or UI/logic code) by calling the Skill tool with "prototype". Links the prototype as an asset. Use when "how should it look" or "how should it behave" is the key question.
-- **Grilling** (HITL): Conversation. The default case. Always call the Skill tool twice, for "grilling" and "domain-modeling".
+- **Research** (AFK): Reading documentation, third-party APIs, or local resources like knowledge bases to surface a fact a decision waits on. Resolved by a subagent that calls the Skill tool with "research". Use when knowledge outside the current working directory is required. Its last act is to plan the topic's round (see [Rounds](#rounds)).
+- **Prototype** (AFK): Build a cheap, rough, concrete artifact (an outline, a rough take, a stub, or UI/logic code) that answers the question in its brief, by calling the Skill tool with "prototype". Links the prototype as an asset. It builds only: it never holds a review conversation. If it needs steering mid-build it parks (see [Rounds](#rounds)). The human's reaction happens later, in recommend and grilling.
+- **Recommend** (HITL): The human's interface to one round. Answers parked questions (triage mode), then reviews every prototype output and reaches a mutual topic-level recommendation (decision mode). Always call the Skill tool twice, for "grilling" and "domain-modeling". See [Rounds](#rounds).
+- **Grilling** (HITL): Conversation at the wider scope. The default case. Always call the Skill tool twice, for "grilling" and "domain-modeling". When it follows a recommend ticket it starts from the recommendation.
 - **Task** (HITL or AFK): Manual work that must happen before a _decision_ can be made: nothing to decide, prototype, or research, but the discussion is blocked until it's done. Signing up for a service so its API can be judged, provisioning access, moving data so its shape can be seen. This is the one type that _does_ rather than decides, and it earns its place by unblocking a decision, not by delivering the destination. The agent drives it alone where it can (AFK); otherwise it hands the human a precise checklist (HITL). Resolved when the work is done; the answer records what was done and any resulting facts (credentials location, new URLs, row counts) later tickets depend on.
+
+## Rounds
+
+A topic is worked in a **round**: research → prototypes → recommend → grilling. Each role does one thing; the flow is research clarifying what to prototype, prototypes validating the research, recommend turning the evidence into a topic-level decision with the human, and grilling deciding at the wider scope.
+
+**Planning the round.** The number and type of prototypes is fog until research has clarified it, so don't pre-create them. When a research ticket resolves, its last act is to look at the leading results and create, as children of the map:
+
+- one **prototype** per leading candidate per genuine uncertainty (skip any that would not change a decision), each with a **brief**: the question it answers, what "validated" means, and what to measure. Each is blocked by the research ticket.
+- one **recommend** ticket, blocked by all of those prototypes.
+- the topic's **grilling** ticket, blocked by the recommend ticket (create it if it does not exist yet; otherwise add the edge).
+
+If nothing is worth prototyping, create no recommend ticket and block the grilling ticket on the research ticket directly. Tickets are created then wired in a second pass, as when charting. This does not edit the map body.
+
+**Parking.** A research or prototype ticket that needs human input does not wait. It commits its work to its branch, posts the question as a comment, adds the `awaiting-answer` label, and exits. After the answer is posted, a fresh subagent resumes it from the branch and the comments, and the label is removed.
+
+**Recommend, two modes on one ticket.**
+
+- **Triage mode.** The ticket is natively blocked, but it is takeable whenever any ticket in its round carries `awaiting-answer`. Claim it, find those tickets, grill the human on their questions, post each answer as a comment on the waiting ticket, remove the label, resume the subagents, then release the claim. The ticket stays open and blocked.
+- **Decision mode.** Every blocker is closed. Claim it, read all outputs, draft a recommendation, and grill the human to a mutual recommendation scoped to the topic ("which candidate, and why"). Record it as the resolution comment and close. The agent recommends; only the human decides.
+- **Growing the round.** Either mode may create research or prototype tickets in the round. Wire each as a blocker of the recommend ticket and comment why. The ticket returns to blocked. If the leading candidates fail, the same mechanism adds a new batch of prototypes.
+
+**Grilling after recommend.** The grilling ticket is the session that decides at the wider scope, across topics and fog, starting from the recommendation. It can overturn the recommendation but does not re-ask what was settled. It is the writer to the map: it appends to Decisions so far and graduates fog.
+
+**Clear-cut skip.** If, in decision mode, the **human** declares the recommendation clear-cut, the recommend session writes the Decisions-so-far line itself, graduates any fog it clears, and closes the grilling ticket with a comment "resolved by recommend". The agent never declares a topic clear-cut; the default is that grilling runs.
 
 ## Fog of war
 
@@ -102,7 +127,7 @@ Ruling something out of scope is a scoping act, not a step on the route. When a 
 
 ## Invocation
 
-Two modes. Either way, **never resolve more than one ticket per session**, with the exception of research tickets.
+Two modes. Either way, **never resolve more than one ticket per session**, with the exception of research tickets. A recommend ticket in triage mode resolves nothing, so it does not count; it may be served any number of times before it closes.
 
 ### Chart the map
 
@@ -112,7 +137,7 @@ User invokes with a loose idea.
 2. **Map the frontier.** Grill again, **breadth-first** this time: fan out across the whole space rather than deep on any one thread, surfacing the open decisions and the first steps takeable now. **If this surfaces no fog** (the way to the destination is already clear, the whole journey small enough for one session), you don't need a map. Stop and ask the user how they'd like to proceed.
 3. **Create the map** (label `wayfinder:map`): Destination and Notes filled in, Decisions-so-far empty, the fog sketched into **Not yet specified**.
 4. **Create the tickets you can specify now** as child issues of the map, then wire blocking edges in a **second pass** (issues need ids before they can reference each other). Write cross-references in that pass too, with real ids: a placeholder `#<n>` auto-links to an unrelated issue. Wiring sorts them into the frontier and the blocked; everything you can't yet specify stays in the fog: the **Not yet specified** section.
-5. **Fire the research subagents.** For each `research` ticket you just created, spin up a subagent with a fresh context window that calls the Skill tool with "research" to resolve it in parallel, capturing its findings on a throwaway `research/<name>` branch with a context pointer from the ticket. Push the branch but open no PR: it is never merged.
+5. **Fire the research subagents.** For each `research` ticket you just created, spin up a subagent with a fresh context window that calls the Skill tool with "research" to resolve it in parallel, capturing its findings on a throwaway `research/<name>` branch with a context pointer from the ticket. Push the branch but open no PR: it is never merged. When each research ticket resolves, its subagent plans the round (see [Rounds](#rounds)).
 6. Stop: charting is one session's work; it hand-resolves nothing.
 
 ### Work through the map

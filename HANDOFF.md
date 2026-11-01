@@ -15,12 +15,30 @@ A written spec for the first public release of libharness, ready to hand off for
 ## User's standing rules (also in the map Notes)
 
 1. Decisions are data driven. Research tickets must link primary sources.
-2. Research feeds prototype tickets, which test the real choices and produce a recommendation.
-3. Grilling is only for identifying fog and for deciding from the research and prototype recommendations.
-4. Smart blocking: a grilling ticket is blocked by the research and prototype tickets on its own topic.
+2. **Rounds.** The flow per topic is research → prototype → recommend → grilling (see "The round model" below). Research clarifies what to prototype, and its last act is to plan the round.
+3. Grilling is only for identifying fog and for deciding, at the wider scope, from the recommendation.
+4. Smart blocking: a grilling ticket is blocked by the recommend ticket on its own topic (or by the research ticket directly when no prototypes were worth building).
 5. Ask questions inline in chat as plain text. Never use menu or multiple-choice tools (voice-to-text user). This is also in `CLAUDE.md`.
 6. A research ticket closes only after its findings are rebased onto `main` under `research/` AND its `research/<name>` branch is deleted. The sandbox proxy cannot delete remote branches, so the human does it.
 7. Handoff and planning documents are plain Markdown files, not docs.
+
+## The round model
+
+Agreed 2026-11-01. Written into the map Notes (rules 2 to 4), `.claude/skills/wayfinder/SKILL.md` (Rounds section) and `docs/agents/issue-tracker.md`.
+
+Four roles, one label each: `wayfinder:research`, `wayfinder:prototype`, `wayfinder:recommend`, `wayfinder:grilling`.
+
+1. **Research (AFK)** gathers primary sources. Its last act is to plan the round from the leading results: one prototype ticket per leading candidate per genuine uncertainty (skip any that would not change a decision), each with a brief (the question, what "validated" means, what to measure) and blocked by the research ticket; one recommend ticket blocked by all of those prototypes; and the topic's grilling ticket blocked by the recommend ticket. The number of prototypes is fog until research closes, so they are never pre-created. If nothing is worth prototyping, there is no recommend ticket and grilling is blocked by research directly.
+2. **Prototype (AFK)** builds only. If it needs steering mid-build it parks: it commits to its branch, comments the question, adds the `awaiting-answer` label and exits. After the answer is posted a fresh subagent resumes it from the branch and the comments.
+3. **Recommend (HITL)** is the human's interface to the round, with two modes on one ticket:
+   - *Triage:* natively blocked, but takeable whenever any ticket in its round has `awaiting-answer`. Grill the human on those questions, comment the answers on the waiting tickets, remove the label, resume the subagents, release the claim. The ticket stays open.
+   - *Decision:* all blockers closed. Read every output, draft a recommendation, grill the human to a mutual topic-level recommendation ("which candidate, and why"), post it as the resolution comment, close.
+   - Either mode may create research or prototype tickets inside its round, wired as blockers of the recommend ticket with a comment saying why. That is also how a failed round gets a second batch.
+4. **Grilling (HITL)** decides at the wider scope (across topics, fog), starting from the recommendation. It does not re-ask what was settled but can overturn it. It is the writer to the map: it appends to Decisions so far and graduates fog.
+
+The agent recommends; only the human decides. **Clear-cut skip:** if the human (never the agent) declares a topic clear-cut in the recommend session, recommend writes the Decisions-so-far line itself and closes the grilling ticket with "resolved by recommend". The default is that grilling runs.
+
+Because HITL reactions now live in recommend and grilling, an unreachable-user prototype is the normal case. Upstream's `prototype` skill already allows this ("if the user isn't reachable, default to ... and state the assumption") and is unchanged.
 
 ## Ticket status
 
@@ -31,11 +49,13 @@ A written spec for the first public release of libharness, ready to hand off for
 | 4 | Research: sans-IO design in Rust | closed, `research/sans-io-rust.md` |
 | 5 | Research: Rust LLM crate landscape | closed, `research/rust-llm-landscape.md` |
 | 6 | Prototype: sans-IO host interface | closed; branch `prototype/sans-io-host` |
-| 7 | Prototype: provider abstraction over OpenRouter | open, unblocked, not started |
-| 10 | Prototype: rig against libharness requirements | open; built on branch `prototype/rig`; awaiting the user's reaction |
-| 11 | Grill: build vs adopt | open, blocked by #10; also blocks #8 and #9 |
-| 8 | Grill: host-interface shape | open, blocked by #11 and #6's topic work |
-| 9 | Grill: provider abstraction | open, blocked by #11 and #7 |
+| 7 | Prototype: provider abstraction over OpenRouter | open, unblocked, not started (AFK; brief added) |
+| 10 | Prototype: rig against libharness requirements | open; built on branch `prototype/rig`. Under the round model its work is done; close it once the user agrees, which unblocks #15 |
+| 15 | Recommend: build vs adopt | open, blocked by #10 |
+| 16 | Recommend: provider abstraction | open, blocked by #7 |
+| 11 | Grill: build vs adopt | open, blocked by #15; also blocks #8 and #9 |
+| 8 | Grill: host-interface shape | open, blocked by #11 (its research and prototype, #2, #4, #6, are closed; no recommend ticket was needed) |
+| 9 | Grill: provider abstraction | open, blocked by #11 and #16 |
 
 Findings in brief:
 - **Pi:** two layers. Core is nested loops with hooks and steering/follow-up queues. The coding-agent layer adds append-only tree sessions, compaction as appended summaries, and about 40 extension events.
@@ -65,13 +85,14 @@ Unanswered questions I put to the user at the end of the session:
 
 ## Next steps
 
-1. Get the user's answers on continuity and spawning, and their reaction to the rig prototype (#10). Recommendation there is to build from scratch.
+0. The round model above is done: skill, tracker doc, map Notes, labels (`wayfinder:recommend`, `awaiting-answer`), recommend tickets #15 and #16, and the blocking rewiring. Still to decide: whether to close #10 (see table).
+1. Get the user's answers on continuity and spawning, and their reaction to the rig prototype (#10) in the recommend ticket #15. The prototype's recommendation is to build from scratch.
 2. Reshape the map: rewrite Notes and provisional leanings to the session-as-task model; reconsider the Pi-style "no sub-agents in core" leaning, which the session model reverses. Rename or reshape "Grill: host-interface shape" (#8) around it.
 3. Add tickets:
    - Prototype: session-as-task with injected async capabilities, run on two executors to prove runtime neutrality.
    - Research: technical enforcement of "no I/O" in a Rust crate (dependency allowlist, clippy `disallowed-*`, cargo-deny, CI checks, capability patterns).
    - Grill: session boundaries and continuity (including host-owned spawning).
-   - Wire blocking by topic, per the rules.
+   - Wire blocking by topic, per the rules, using the round model: each new prototype gets a brief and a recommend ticket, and the grilling ticket is blocked by that recommend ticket.
 4. Run the OpenRouter provider prototype (#7). With the model call now a host callback, reframe it as an optional adapter. Then close #10 and run "Grill: build vs adopt" (#11).
 5. Move closed prototype findings into the map's Decisions so far as tickets close. Fog to graduate later: async runtime and streaming, sessions (tree structure, storage), steering, built-in tools, compaction and skills, AGENTS.md, MCP, errors, testing, crate layout, MSRV, licence, release criteria.
 

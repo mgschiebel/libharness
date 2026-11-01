@@ -1,0 +1,17 @@
+[package]
+name = "proto-rig"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[workspace]
+
+[dependencies]
+rig-core = { version = "0.46", features = ["reqwest"] }
+rig-agent = "0.46"
+rig-memory = { version = "0.46", features = ["fs"] }
+anyhow = "1"
+tokio = { version = "1", features = ["full"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+axum = "0.8"

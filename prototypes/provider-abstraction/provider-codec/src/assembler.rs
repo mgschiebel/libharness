@@ -14,8 +14,15 @@ struct Partial {
     args: String,
 }
 #[derive(Default)]
+struct PartialReasoning {
+    text: String,
+    signature: Option<String>,
+    redacted: Option<String>,
+}
+#[derive(Default)]
 pub struct Assembler {
     text: String,
+    reasoning: BTreeMap<usize, PartialReasoning>,
     calls: BTreeMap<usize, Partial>,
     finish: Option<FinishReason>,
     usage: Option<Usage>,
@@ -40,6 +47,16 @@ impl Assembler {
                     }
                 }
                 p.args.push_str(&args);
+            }
+            StreamEvent::Reasoning { index, text, signature } => {
+                let r = self.reasoning.entry(index).or_default();
+                r.text.push_str(&text);
+                if signature.is_some() {
+                    r.signature = signature;
+                }
+            }
+            StreamEvent::RedactedReasoning { index, data } => {
+                self.reasoning.entry(index).or_default().redacted = Some(data);
             }
             // OpenRouter repeats the terminal reason in the usage chunk: first one wins.
             StreamEvent::Finish(f) => {
@@ -68,9 +85,17 @@ impl Assembler {
                 ToolCall { id: p.id.unwrap_or_else(|| format!("call_{i}")), name: p.name, args, args_error }
             })
             .collect::<Vec<_>>();
+        let reasoning = core::mem::take(&mut self.reasoning)
+            .into_values()
+            .map(|r| match r.redacted {
+                Some(data) => ReasoningBlock::Redacted { data },
+                None => ReasoningBlock::Thinking { text: r.text, signature: r.signature.unwrap_or_default() },
+            })
+            .collect();
         ModelReply {
             text: core::mem::take(&mut self.text),
             tool_calls: calls,
+            reasoning,
             finish,
             usage: self.usage.take(),
             model: self.model.take(),

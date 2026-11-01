@@ -22,7 +22,7 @@ impl Provider for StubApi {
             .iter()
             .map(|m| match m {
                 Message::User(t) => json!({"who": "user", "text": t}),
-                Message::Assistant { text, tool_calls } => json!({"who": "bot", "text": text,
+                Message::Assistant { text, tool_calls, .. } => json!({"who": "bot", "text": text,
                     "calls": tool_calls.iter().map(|c| json!({"ref": c.id, "fn": c.name, "input": c.args})).collect::<Vec<_>>()}),
                 Message::ToolResult { call_id, content, is_error, .. } => json!({"who": "tool", "ref": call_id, "text": content, "failed": is_error}),
             })

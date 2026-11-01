@@ -4,6 +4,7 @@
 #![no_std]
 extern crate alloc;
 
+pub mod anthropic;
 pub mod assembler;
 pub mod openrouter;
 pub mod sse;

@@ -30,7 +30,7 @@ impl OpenRouter {
 fn message_json(m: &Message) -> Value {
     match m {
         Message::User(t) => json!({"role": "user", "content": t}),
-        Message::Assistant { text, tool_calls } => {
+        Message::Assistant { text, tool_calls, .. } => {
             let mut v = json!({"role": "assistant", "content": if text.is_empty() && !tool_calls.is_empty() { Value::Null } else { json!(text) }});
             if !tool_calls.is_empty() {
                 v["tool_calls"] = tool_calls
@@ -52,7 +52,9 @@ impl Provider for OpenRouter {
         let mut body = self.body_defaults.clone();
         body.insert("model".into(), json!(self.model));
         body.insert("stream".into(), json!(true));
-        body.insert("messages".into(), req.messages.iter().map(message_json).collect());
+        let mut msgs: Vec<Value> = req.system.iter().map(|s| json!({"role": "system", "content": s})).collect();
+        msgs.extend(req.messages.iter().map(message_json));
+        body.insert("messages".into(), Value::Array(msgs));
         if !req.tools.is_empty() {
             // The research notes say tools must be resent on every turn: the session loop already does.
             body.insert(

@@ -15,7 +15,8 @@ pub struct ToolCall {
 #[derive(Clone, Debug, PartialEq)]
 pub enum Message {
     User(String),
-    Assistant { text: String, tool_calls: Vec<ToolCall> },
+    /// `reasoning` is NEW (Anthropic finding): opaque blocks that must be replayed unchanged.
+    Assistant { text: String, tool_calls: Vec<ToolCall>, reasoning: Vec<ReasoningBlock> },
     ToolResult { call_id: String, name: String, content: String, is_error: bool },
 }
 #[derive(Clone, Debug, PartialEq)]
@@ -24,10 +25,21 @@ pub struct ToolSpec {
     pub description: String,
     pub params: Value,
 }
+/// A model "thinking" block. Anthropic requires these to be passed back unchanged (signature
+/// intact) with the tool results of the same turn, so they are history, not just output.
+#[derive(Clone, Debug, PartialEq)]
+pub enum ReasoningBlock {
+    Thinking { text: String, signature: String },
+    /// Encrypted, no readable text (`redacted_thinking`).
+    Redacted { data: String },
+}
 /// NEW vs session-task: `extra` is an opaque per-request pass-through (reasoning, provider
 /// routing...). session-task's `ModelRequest.cancel` is absent: cancel = drop the future.
+/// NEW in the Anthropic round: `system` (it has a top-level slot there; before, the shared types
+/// had no way to express a system prompt at all).
 #[derive(Clone, Debug, Default)]
 pub struct ModelRequest {
+    pub system: Option<String>,
     pub messages: Vec<Message>,
     pub tools: Vec<ToolSpec>,
     pub extra: Option<Value>,
@@ -53,6 +65,8 @@ pub enum FinishReason {
 pub struct ModelReply {
     pub text: String,
     pub tool_calls: Vec<ToolCall>,
+    /// NEW (Anthropic round): thinking blocks, in block order. Must be replayed in history.
+    pub reasoning: Vec<ReasoningBlock>,
     pub finish: FinishReason,
     pub usage: Option<Usage>,
     pub model: Option<String>,
@@ -119,6 +133,10 @@ pub enum StreamEvent {
     Text(String),
     /// A fragment of tool call `index`. id/name normally only in the first fragment.
     ToolCall { index: usize, id: Option<String>, name: Option<String>, args: String },
+    /// NEW (Anthropic round): a fragment of thinking block `index` (text and/or its signature).
+    Reasoning { index: usize, text: String, signature: Option<String> },
+    /// NEW (Anthropic round): a whole `redacted_thinking` block.
+    RedactedReasoning { index: usize, data: String },
     Finish(FinishReason),
     Usage(Usage),
     Model(String),

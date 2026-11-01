@@ -1,0 +1,15 @@
+# PROTOTYPE (throwaway). Deliberately NOT a member of the parent workspace: it holds the host-side
+# HTTP client (ureq), which must never reach the codec or adapter dependency graph.
+[package]
+name = "live-smoke"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+provider-adapter = { path = "../provider-adapter" }
+ureq = { version = "2", default-features = false, features = ["tls", "json"] }
+serde_json = "1"
+futures = "0.3"
+
+[workspace]

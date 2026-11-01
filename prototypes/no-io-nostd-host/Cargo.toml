@@ -1,0 +1,11 @@
+[workspace]
+resolver = "2"
+members = ["core", "probe", "host-tests", "host"]
+# plain `cargo build/test` at the root skips probe (cdylib with panic_handler/global allocator cannot build natively, E0152)
+default-members = ["core", "host-tests", "host"]
+[profile.dev]
+panic = "abort"
+[profile.release]
+opt-level = "s"
+lto = true
+panic = "abort"

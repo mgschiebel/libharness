@@ -1,0 +1,29 @@
+# PROTOTYPE allowlist for the no-I/O core. Anything not listed is a ban.
+[graph]
+targets = ["wasm32v1-none"]
+exclude-dev = true
+
+[bans]
+multiple-versions = "allow"
+wildcards = "allow"
+# "deny" fails on proc-macro2/quote/syn/serde_derive (host-only proc-macro stack enables defaults); see README
+external-default-features = "allow"
+allow = [
+  "nostd-core", "probe",
+  "serde", "serde_core", "serde_derive", "serde_json", "itoa", "zmij", "memchr",
+  "futures-core", "pin-project-lite", "thiserror", "thiserror-impl",
+  "tracing", "tracing-core", "tracing-attributes",
+  "hashbrown", "foldhash", "spin",
+  "schemars", "schemars_derive", "serde_derive_internals", "ref-cast", "ref-cast-impl", "dyn-clone",
+  "proc-macro2", "quote", "syn", "unicode-ident",
+]
+
+[bans.build]
+executables = "deny"
+interpreted = "deny"
+# crates allowed to ship a build script (reviewed: all only emit cfg flags / rustc-check-cfg)
+allow-build-scripts = [
+  { name = "serde" }, { name = "serde_core" }, { name = "serde_json" }, { name = "thiserror" },
+  { name = "proc-macro2" }, { name = "syn" }, { name = "quote" }, { name = "ref-cast" },
+  { name = "zmij" }, { name = "memchr" }, { name = "tracing-core" }, { name = "tracing" }, { name = "dyn-clone" },
+]

@@ -1,0 +1,9 @@
+[workspace]
+resolver = "2"
+members = ["core", "probe", "host-tests"]
+[profile.dev]
+panic = "abort"
+[profile.release]
+opt-level = "s"
+lto = true
+panic = "abort"

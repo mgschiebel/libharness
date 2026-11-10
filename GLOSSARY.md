@@ -13,8 +13,12 @@ libharness as a whole: the core plus everything shipped with it.
 _Avoid_: Framework, SDK, harness (when meaning the whole product)
 
 **Core**:
-The part of the library that performs no I/O of its own.
+The layer of the library that performs no I/O of its own: every part that sits under the no-I/O gate, not any single crate.
 _Avoid_: Engine, kernel
+
+**Codec**:
+A piece of the core that translates between the library's model types and one service's wire format, performing no I/O.
+_Avoid_: Provider, driver, parser
 
 **Capability**:
 Anything the host registers for sessions to use: a tool, skill, plugin or option, or the model call itself.

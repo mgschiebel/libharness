@@ -1,0 +1,11 @@
+[package]
+name = "probe-wasip3"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+# Does openrouter-rs's `wasip3` backend (no reqwest) do anything on a native host?
+[dependencies]
+openrouter-rs = { version = "=0.23.0", default-features = false, features = ["wasip3"] }
+
+[workspace]

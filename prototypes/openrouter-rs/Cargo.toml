@@ -1,0 +1,20 @@
+[package]
+name = "openrouter-rs-adapter-proto"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[features]
+# Optional workaround: own a private tokio runtime so the callback future can be polled by any executor.
+private-runtime = ["dep:tokio"]
+
+[dependencies]
+openrouter-rs = "=0.23.0"
+serde_json = "1"
+futures-util = { version = "0.3", default-features = false, features = ["std"] }
+tokio = { version = "1", features = ["rt-multi-thread"], optional = true }
+
+[dev-dependencies]
+futures-executor = { version = "0.3", features = ["thread-pool"] }
+tokio = { version = "1", features = ["rt", "rt-multi-thread", "time", "macros"] }
+futures-util = { version = "0.3", default-features = false, features = ["std", "channel"] }

@@ -20,7 +20,7 @@ Each workspace crate declares `gated = true` or `gated = false` in its Cargo met
 
 ## Crate layout
 
-- `libharness`: the main crate hosts depend on. Sessions, model types, capability registry. Gated.
+- `libharness`: the main crate hosts depend on. Sessions, model types, capability registry. Gated. Amended by ADR 0004: there are no sessions in the library, so this crate is the pure core and the model types (the capability registry is open), and a new gated crate `libharness-loop` holds the optional shipped loop, cancel token, inbox and async helpers.
 - `libharness-codec`: the `Provider` and `Decoder` traits and one module per wire format (OpenRouter, Anthropic), with no cargo features, because features can unify and switch `std` on in the gated tree. Gated; depends on `libharness` for the model types.
 - `libharness-openrouter`: the std adapter. The HTTP transport lives here. Outside the gate and exempt from the allowlist, but subject to the permissive-licence check from ADR 0001. Depends on both.
 - `libharness-probe`: unpublished cdylib, `gated = false`, outside `default-members`. Depends on every gated crate and exports one function per gated crate that runs a canned session or decode against fixtures.
@@ -29,7 +29,7 @@ There is no facade crate. The CI toolchain is pinned in `rust-toolchain.toml` wi
 
 ## Capabilities the core needs from the host
 
-The clock and id generation are ordinary host-registered capabilities, synchronous plain functions, both required to start a session, with no defaults (a silent default hides a missing clock). Narrowed by ADR 0003: the pure core takes no clock, and the clock is required only where something needs it. There is no randomness capability: nothing in the core needs it, and retry jitter belongs to the host because the library has no timers.
+The clock and id generation are ordinary host-registered capabilities, synchronous plain functions, both required to start a session (there is no session in the library after ADR 0004; read it as "required where something needs it"), with no defaults (a silent default hides a missing clock). Narrowed by ADR 0003: the pure core takes no clock, and the clock is required only where something needs it. There is no randomness capability: nothing in the core needs it, and retry jitter belongs to the host because the library has no timers.
 
 ## Callbacks stay serialisable
 

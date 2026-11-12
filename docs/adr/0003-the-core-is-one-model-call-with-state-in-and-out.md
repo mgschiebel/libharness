@@ -21,6 +21,6 @@ The library's essential shape is a set of pure transitions at the centre of the 
 
 ## Consequences
 
-- Whether "session" is a library concept at all, and whether the handle-and-inbox shell around the shipped loop ships, is left open for the session boundaries grilling. The shell was 221 lines in the prototype and exists only so an outside party can steer, abort or receive a typed result from a loop that owns the State.
+- Whether "session" is a library concept at all, and whether the handle-and-inbox shell around the shipped loop ships, was left open for the session boundaries grilling. Settled by ADR 0004: there is no session concept, the shell does not ship, and the typed-result validation, turn cap and queues move from the core to the shipped loop, which narrows the "What this settles" list above (the core validates nothing; "a loop registered as a capability" is no longer a separate option).
 - A plain loop cannot preempt an uncooperative blocking call without a second thread or a cancel-aware client. That cost stays with the host.
 - The model request carries the whole history on every call, so request size grows quadratically with turns. That comes from the request, not from this layering.

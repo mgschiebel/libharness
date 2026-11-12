@@ -5,7 +5,7 @@ A Rust library that embeds an LLM agent harness in a host application. The host 
 ## Language
 
 **Host**:
-The Rust application that embeds libharness, registers capabilities and starts sessions.
+The Rust application that embeds libharness, registers capabilities and decides how many times to call the core and when to stop.
 _Avoid_: App, client, caller, embedder
 
 **Library**:
@@ -21,19 +21,16 @@ A piece of the core that translates between the library's model types and one se
 _Avoid_: Provider, driver, parser
 
 **Capability**:
-Anything the host registers for sessions to use: a tool, skill, plugin or option, or the model call itself.
+Anything the host registers for the library to call: a tool, skill, plugin or option, or the model call itself.
 _Avoid_: Provider, hook, integration
 
-**Session**:
-One independent run started by a prompt, with its own turn loop, ending naturally or when the host ends it.
-_Avoid_: Run, conversation, thread
-
 **Loop**:
-The code that repeatedly makes the model call and the tool calls and feeds the results back into the core until a session ends. The host writes it, registers it as a capability, or uses the one the library optionally ships.
+The code that repeatedly makes the model call and the tool calls and feeds the results back into the core, until it stops. The host writes its own or uses the one the library optionally ships. The library has no notion of a run or session that ends: stopping is the loop's choice, and for a host-written loop it is the host not calling again.
+_Avoid_: Session, run, driver, runner, orchestrator
 _Avoid_: Driver, runner, orchestrator
 
 **State**:
-The owned, serialisable data that goes into and comes out of every core call; the core keeps nothing between calls.
+The owned, serialisable data, message history included, that goes into and comes out of every core call. The host can read and build it; the core keeps nothing between calls and only appends to the history.
 _Avoid_: Context, memory, snapshot
 
 **Adapter**:

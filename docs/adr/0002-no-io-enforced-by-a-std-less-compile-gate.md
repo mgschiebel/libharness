@@ -29,7 +29,7 @@ There is no facade crate. The CI toolchain is pinned in `rust-toolchain.toml` wi
 
 ## Capabilities the core needs from the host
 
-The clock and id generation are ordinary host-registered capabilities, synchronous plain functions, both required to start a session, with no defaults (a silent default hides a missing clock). There is no randomness capability: nothing in the core needs it, and retry jitter belongs to the host because the library has no timers.
+The clock and id generation are ordinary host-registered capabilities, synchronous plain functions, both required to start a session, with no defaults (a silent default hides a missing clock). Narrowed by ADR 0003: the pure core takes no clock, and the clock is required only where something needs it. There is no randomness capability: nothing in the core needs it, and retry jitter belongs to the host because the library has no timers.
 
 ## Callbacks stay serialisable
 

@@ -28,6 +28,14 @@ _Avoid_: Provider, hook, integration
 One independent run started by a prompt, with its own turn loop, ending naturally or when the host ends it.
 _Avoid_: Run, conversation, thread
 
+**Loop**:
+The code that repeatedly makes the model call and the tool calls and feeds the results back into the core until a session ends. The host writes it, registers it as a capability, or uses the one the library optionally ships.
+_Avoid_: Driver, runner, orchestrator
+
+**State**:
+The owned, serialisable data that goes into and comes out of every core call; the core keeps nothing between calls.
+_Avoid_: Context, memory, snapshot
+
 **Adapter**:
 An optional piece outside the core that turns an outside service into a capability, such as the OpenRouter adapter.
 _Avoid_: Provider layer, driver, connector

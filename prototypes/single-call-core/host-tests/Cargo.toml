@@ -1,0 +1,18 @@
+[package]
+name = "host-tests"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+# The host's side of the prototype: its own loops (owner 1 plain code, owner 2 registered
+# callback) and every scenario. Executors appear only here, never in the library crates.
+[dependencies]
+call-core = { path = "../call-core" }
+session-shell = { path = "../session-shell" }
+shipped-loop = { path = "../shipped-loop" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+futures = { version = "0.3", features = ["thread-pool"] }
+
+[dev-dependencies]
+tokio = { version = "1", features = ["rt-multi-thread", "macros"] }

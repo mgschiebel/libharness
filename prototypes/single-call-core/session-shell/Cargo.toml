@@ -1,0 +1,16 @@
+[package]
+name = "session-shell"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[package.metadata]
+gated = true
+
+# PROTOTYPE. The thin layer that lets an *external* party steer / abort / observe a loop
+# that owns the state: a handle, an inbox, a loop-registration hook, the typed edge.
+[dependencies]
+call-core = { path = "../call-core" }
+serde = { version = "1", default-features = false, features = ["alloc"] }
+serde_json = { version = "1", default-features = false, features = ["alloc"] }
+spin = { version = "0.9", default-features = false, features = ["mutex", "spin_mutex"] }

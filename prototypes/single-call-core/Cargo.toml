@@ -1,0 +1,3 @@
+[workspace]
+resolver = "2"
+members = ["call-core", "session-shell", "shipped-loop", "host-owned", "host-tests"]

@@ -1,0 +1,14 @@
+[package]
+name = "call-core"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[package.metadata]
+gated = true
+
+# PROTOTYPE. no_std + alloc: nothing here can reach std, so nothing here can do I/O.
+[dependencies]
+serde = { version = "1", default-features = false, features = ["derive", "alloc"] }
+serde_json = { version = "1", default-features = false, features = ["alloc"] }
+spin = { version = "0.9", default-features = false, features = ["mutex", "spin_mutex"] }

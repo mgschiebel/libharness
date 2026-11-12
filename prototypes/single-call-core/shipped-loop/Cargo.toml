@@ -1,0 +1,13 @@
+[package]
+name = "shipped-loop"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[package.metadata]
+gated = true
+
+# PROTOTYPE. The optional shipped loop: session-task's turn loop rebuilt on call-core.
+[dependencies]
+session-shell = { path = "../session-shell" }
+serde_json = { version = "1", default-features = false, features = ["alloc"] }

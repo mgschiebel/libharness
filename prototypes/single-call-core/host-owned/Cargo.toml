@@ -1,0 +1,11 @@
+[package]
+name = "host-owned"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+# OWNER 1: the host's own plain code over the core. Depends on call-core and serde_json
+# only: no futures crate, no executor, no runtime, not even the registry's async helpers.
+[dependencies]
+call-core = { path = "../call-core" }
+serde_json = "1"

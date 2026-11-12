@@ -1,0 +1,13 @@
+[package]
+name = "transport-ureq"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[features]
+default = ["tls"]
+tls = ["ureq/rustls"]
+
+[dependencies]
+provider-adapter = { path = "../provider-adapter" }
+ureq = { version = "3", default-features = false }

@@ -1,0 +1,3 @@
+[workspace]
+members = ["provider-codec", "provider-adapter", "transport-std", "transport-ureq", "transport-reqwest", "mock-server", "conformance"]
+resolver = "2"

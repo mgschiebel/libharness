@@ -1,0 +1,17 @@
+[package]
+name = "transport-reqwest"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+provider-adapter = { path = "../provider-adapter" }
+reqwest = { version = "0.13", default-features = false, features = ["stream"] }
+futures-util = { version = "0.3", default-features = false }
+tokio = { version = "1", default-features = false, features = ["rt-multi-thread"], optional = true }
+
+[features]
+default = ["tls"]
+tls = ["reqwest/rustls"]
+# Workaround for runtime coupling: the adapter owns a tokio runtime and bridges to a runtime-neutral future.
+owned-runtime = ["dep:tokio"]

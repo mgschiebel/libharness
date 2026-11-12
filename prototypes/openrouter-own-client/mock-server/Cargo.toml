@@ -1,0 +1,6 @@
+[package]
+name = "mock-server"
+version = "0.0.0"
+edition = "2021"
+publish = false
+# std only: a loopback HTTP/1.1 server that replays scripted OpenRouter-shaped SSE with chunked transfer encoding.

@@ -1,0 +1,9 @@
+[package]
+name = "transport-std"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+# The "host supplies it" reference: plain `http://` over std::net, no dependencies beyond the adapter.
+[dependencies]
+provider-adapter = { path = "../provider-adapter" }

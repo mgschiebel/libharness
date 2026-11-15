@@ -1,0 +1,7 @@
+# ADR 0002: the core may use `spin` locks, but never holds a guard across an `.await`. A held guard on a
+# single-threaded executor deadlocks the whole run.
+# Clippy does not re-run when only this file changes; ci/gate.sh touches the gated crates first.
+await-holding-invalid-types = [
+    { path = "spin::mutex::MutexGuard", reason = "do not hold a spin guard across an .await (ADR 0002)" },
+    { path = "spin::mutex::SpinMutexGuard", reason = "do not hold a spin guard across an .await (ADR 0002)" },
+]

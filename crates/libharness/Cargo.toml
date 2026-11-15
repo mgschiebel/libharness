@@ -1,0 +1,15 @@
+[package]
+name = "libharness"
+description = "An LLM agent harness embedded in a Rust host application. This is the pure core."
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+# Every crate must say whether the no-I/O gate applies to it. CI fails on a crate that says neither.
+[package.metadata.libharness]
+gated = true
+
+# Everything is `default-features = false`: features can unify and switch `std` on in the gated tree.
+[dependencies]
+serde = { version = "1", default-features = false, features = ["derive", "alloc"] }
+spin = { version = "0.9", default-features = false, features = ["mutex", "spin_mutex"] }

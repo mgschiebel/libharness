@@ -1,0 +1,42 @@
+name: ci
+
+on:
+  push:
+    branches: [main, "integration/**"]
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  # The no-I/O gate (ADR 0002): every layer, on every gated crate. Required.
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # The toolchain, components and the wasm32v1-none target come from rust-toolchain.toml.
+      - run: rustup show
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-deny
+      - run: ./ci/gate.sh
+
+  # Ordinary checks.
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: rustup show
+      - run: cargo fmt --all --check
+      - run: cargo test  # default-members only: the probe is wasm-only
+
+  # Proves the gate can fail: injects each violation in turn and requires the right layer to catch it.
+  negative-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: rustup show
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-deny
+      - run: ./ci/negative-checks.sh

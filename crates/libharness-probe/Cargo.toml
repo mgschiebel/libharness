@@ -1,0 +1,18 @@
+[package]
+name = "libharness-probe"
+description = "Unpublished wasm probe: builds the gated crates into a cdylib whose import section must be empty."
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+# The probe is a build artefact, not part of the core: it needs an allocator and a panic handler, which
+# are the host's job. It is outside the no-I/O gate and outside `default-members`.
+[package.metadata.libharness]
+gated = false
+
+[lib]
+crate-type = ["cdylib"]
+
+# One dependency per gated crate. Later tickets add libharness-codec, -exchange and -loop here.
+[dependencies]
+libharness = { path = "../libharness" }

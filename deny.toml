@@ -1,0 +1,64 @@
+# cargo-deny policy for the GATED crates (ADR 0002, ADR 0001). ci/gate.sh runs it with every ungated crate
+# excluded, so this file describes what the gated tree may contain and nothing else.
+# Anything not on the allowlist is a ban. Adding a name here is a review decision: it admits a new crate
+# into the code that must never reach the outside world.
+
+[graph]
+targets = ["wasm32v1-none"]
+exclude-dev = true
+
+[bans]
+multiple-versions = "allow"
+wildcards = "allow"
+# ADR 0002 asks for `external-default-features = "deny"`, but that lint fires on serde_derive, whose empty
+# `default` feature serde's `derive` feature turns on (also proc-macro2, quote and syn in the host-only
+# proc-macro stack), and cargo-deny has no per-crate exemption. The prototype for ticket 22 hit the same
+# wall. What the lint is for is covered two other ways: `workspace-default-features = "deny"` fails a gated
+# crate that depends on anything with default features on, and the per-package wasm32v1-none check fails
+# if any external default switches `std` on.
+external-default-features = "allow"
+workspace-default-features = "deny"
+
+# Workspace crates that are gated, then the reviewed external crates. Later tickets add the other gated
+# workspace crates (libharness-codec, -exchange, -loop) here.
+allow = [
+    { crate = "libharness" },
+    # serde and its derive stack (derive is a host-only proc macro, never compiled into the wasm artefact)
+    { crate = "serde" },
+    { crate = "serde_core" },
+    { crate = "serde_derive" },
+    { crate = "proc-macro2" },
+    { crate = "quote" },
+    { crate = "syn" },
+    { crate = "unicode-ident" },
+    # the one lock the core may use
+    { crate = "spin" },
+]
+
+[bans.build]
+# A dependency's own build script runs on the host at compile time. Only reviewed crates may have one,
+# and only to emit cfg flags. cargo-deny does not apply this to workspace members: ci/crates.py does.
+executables = "deny"
+interpreted = "deny"
+allow-build-scripts = [
+    { crate = "serde" },
+    { crate = "serde_core" },
+    { crate = "proc-macro2" },
+    { crate = "quote" },
+    { crate = "syn" },
+]
+
+[licenses]
+# ADR 0001: permissive licences only in the gated tree. The ureq Transport crate (ungated) gets its own
+# list when it is added (ticket 47).
+allow = [
+    "MIT",
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "Unicode-3.0",
+]
+confidence-threshold = 0.93
+
+[licenses.private]
+# Our own crates have `publish = false` until the licence decision (out of scope for the MVP slice).
+ignore = true

@@ -1,0 +1,12 @@
+[package]
+name = "thread-runner"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+# K3: the opt-in std crate OUTSIDE the gate. It depends on the core, never the reverse.
+[package.metadata]
+gated = false
+
+[dependencies]
+cb-core = { path = "../cb-core" }

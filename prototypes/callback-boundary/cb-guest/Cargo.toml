@@ -1,0 +1,20 @@
+[package]
+name = "cb-guest"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+# The Wasm guest: the core's loop compiled for wasm32v1-none, callbacks as host imports.
+# Not gated: it needs an allocator and exports, which is what `unsafe` is for. The gated
+# crate it wraps (cb-core) stays forbid(unsafe_code).
+[package.metadata]
+gated = false
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+cb-core = { path = "../cb-core" }
+serde_json = { version = "1", default-features = false, features = ["alloc"] }
+dlmalloc = { version = "0.2", features = ["global"] }
+spin = { version = "0.9", default-features = false, features = ["mutex", "spin_mutex"] }

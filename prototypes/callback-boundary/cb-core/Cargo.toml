@@ -1,0 +1,16 @@
+[package]
+name = "cb-core"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[package.metadata]
+gated = true
+
+# PROTOTYPE (ticket 36). no_std + alloc. Reuses the pure core (State, transitions, cancel
+# token, async helpers) from prototypes/single-call-core and adds only the boundary layer.
+[dependencies]
+call-core = { path = "../../single-call-core/call-core" }
+serde = { version = "1", default-features = false, features = ["derive", "alloc"] }
+serde_json = { version = "1", default-features = false, features = ["alloc"] }
+spin = { version = "0.9", default-features = false, features = ["mutex", "spin_mutex"] }

@@ -1,0 +1,10 @@
+[workspace]
+resolver = "2"
+members = ["cb-core", "thread-runner", "cb-host", "cb-guest"]
+# cb-guest is a no_std cdylib that only builds for wasm32v1-none; keep it out of plain `cargo test`.
+default-members = ["cb-core", "thread-runner", "cb-host"]
+
+[profile.release]
+panic = "abort"
+opt-level = "s"
+lto = true

@@ -43,4 +43,4 @@ Amended by [ADR 0006](0006-callbacks-are-plain-data-and-plain-callbacks-and-the-
 
 ## Left open
 
-Who reviews changes to the gate configuration is repository maintenance, not library design, and is out of scope. The Wasm component runtime, MSRV policy and the structured, serialisable error type for the model-call callback (grilling issues 8 and 9) are open.
+Who reviews changes to the gate configuration is repository maintenance, not library design, and is out of scope. The Wasm component runtime, MSRV policy and the structured, serialisable error type for the model-call callback (grilling issues 8 and 9) are open. Settled by ADR 0006 (the base error) and [ADR 0007](0007-codec-modules-broker-first-shared-types-and-a-structured-model-call-error.md) (the provider-specific fields), 2026-11-15; the Wasm runtime and MSRV stay open.

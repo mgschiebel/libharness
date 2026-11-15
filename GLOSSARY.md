@@ -21,8 +21,8 @@ A piece of the core that translates between the library's model types and one se
 _Avoid_: Provider, driver, parser
 
 **Capability**:
-Anything the host registers for the library to call: a tool, skill, plugin or option, or the model call itself.
-_Avoid_: Provider, hook, integration
+A named callback the host registers in the builder, which produces the immutable capability value each run copies at its start. The tool is the only kind the model sees; the model call, Transport, clock, sleeper and Offloader are never shown to it.
+_Avoid_: Provider, hook, integration, skill, plugin, option
 
 **Loop**:
 The code that repeatedly makes the model call and the tool calls and feeds the results back into the core, until it stops. The host writes its own or uses the one the library optionally ships. The library has no notion of a run or session that ends: stopping is the loop's choice, and for a host-written loop it is the host not calling again.

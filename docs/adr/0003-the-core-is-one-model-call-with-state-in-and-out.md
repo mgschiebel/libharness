@@ -14,7 +14,7 @@ The library's essential shape is a set of pure transitions at the centre of the 
 ## What this settles
 
 - The pure transitions are the session engine. They take no clock and no callbacks; State carries the host-supplied id.
-- The cancel contract has three parts and the library ships all three in its async helpers: a token with synchronous hooks, one extra poll after cancel, and cancel winning over a result that lands in that extra poll. Without the third part a loop that finishes a tool batch during the extra poll carries on after an abort.
+- The cancel contract has three parts and the library ships all three in its async helpers: a token with synchronous hooks, one extra poll after cancel, and cancel winning over a result that lands in that extra poll. Without the third part a loop that finishes a tool batch during the extra poll carries on after an abort. **Replaced by [ADR 0006](0006-callbacks-are-plain-data-and-plain-callbacks-and-the-capability-set-is-an-immutable-value.md) (2026-11-15):** cancelling drops the callback's future and the drop always wins; `cancelled()` is a poll-only flag; the token with hooks and the extra poll are an in-process convenience for the shipped loop, not the contract.
 - State is the checkpoint. A host can store it and resume, which re-issues the model call that was in flight; the library makes no exactly-once promise for that call.
 - The typed result is checked by a synchronous validator the host supplies, together with the JSON schema. The core does no schema validation.
 - The clock capability from ADR 0002 is required only where something needs it (a shipped loop, an adapter, a host budget check). A host-owned loop need not register one.

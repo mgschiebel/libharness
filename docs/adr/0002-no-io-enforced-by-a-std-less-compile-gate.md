@@ -35,6 +35,8 @@ The clock and id generation are ordinary host-registered capabilities, synchrono
 
 Every value crossing a callback is owned, serialisable data: no borrowed lifetimes, generics or trait objects in requests, replies, stream events, tool arguments and results, typed results or errors. Only the callbacks themselves are Rust closures. A Wasm component runtime as a true sandbox is not in the first release and stays open, but this keeps it possible: a crate that builds for `wasm32v1-none` with zero imports is already a valid guest.
 
+Amended by [ADR 0006](0006-callbacks-are-plain-data-and-plain-callbacks-and-the-capability-set-is-an-immutable-value.md) (2026-11-15): the rule stands, and plain callbacks (`cancelled()`, `emit(bytes)`, and a body read and close by id) stand in for handles. A handle type exists only as an in-process Rust convenience. The "capability registry" in `libharness` and the open structured error are settled there too: the library holds no registry, and the host's builder produces an immutable capability value.
+
 ## Accepted costs
 
 `hashbrown` instead of std `HashMap`; `spin` instead of std `Mutex`; time only through the injected clock; about 27 external crates in the core.

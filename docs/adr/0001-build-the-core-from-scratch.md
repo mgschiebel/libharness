@@ -19,9 +19,9 @@ Ideas only, no code:
 
 - **Pi**: the two-layer shape, nested loops with hooks, and steering and follow-up queues.
 - **rig**: compared against the libharness requirements (issue 10); informed the rejection of an ergonomic agent type that owns side effects.
-- **genai, async-openai**: provider-client designs and message shapes; candidates for the optional adapter, not dependencies of the core.
+- **genai, async-openai**: provider-client designs and message shapes; not dependencies of the core. Not dependencies of the OpenRouter client either (ADR 0005).
 - **swiftide**: compared in the crate-landscape research (issue 5).
 
-## Left open
+## Settled later
 
-Whether the optional OpenRouter adapter reuses an existing client crate or is written from scratch, and where the adapter lives, are decided by a research and prototype round before this grilling closes.
+Whether the OpenRouter client reuses an existing crate or is written from scratch, and where it lives, was decided on 2026-11-14 after a research and prototype round: it is written from scratch, and the only network code is an opt-in crate the core cannot reach (ADR 0005).

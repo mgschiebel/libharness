@@ -22,7 +22,7 @@ Each workspace crate declares `gated = true` or `gated = false` in its Cargo met
 
 - `libharness`: the main crate hosts depend on. Sessions, model types, capability registry. Gated. Amended by ADR 0004: there are no sessions in the library, so this crate is the pure core and the model types (the capability registry is open), and a new gated crate `libharness-loop` holds the optional shipped loop, cancel token, inbox and async helpers.
 - `libharness-codec`: the `Provider` and `Decoder` traits and one module per wire format (OpenRouter, Anthropic), with no cargo features, because features can unify and switch `std` on in the gated tree. Gated; depends on `libharness` for the model types.
-- `libharness-openrouter`: the std adapter. The HTTP transport lives here. Outside the gate and exempt from the allowlist, but subject to the permissive-licence check from ADR 0001. Depends on both.
+- `libharness-openrouter`: the std adapter. The HTTP transport lives here. Outside the gate and exempt from the allowlist, but subject to the permissive-licence check from ADR 0001. Depends on both. Replaced by ADR 0005: there is no adapter crate. The OpenRouter codec sits in `libharness-codec`, the code that runs one model call is a new gated crate `libharness-exchange`, and the only network code is the opt-in `libharness-transport-ureq` (ungated, never referenced by the core, with its own licence allowlist).
 - `libharness-probe`: unpublished cdylib, `gated = false`, outside `default-members`. Depends on every gated crate and exports one function per gated crate that runs a canned session or decode against fixtures.
 
 There is no facade crate. The CI toolchain is pinned in `rust-toolchain.toml` with the `wasm32v1-none` target; MSRV policy is left open.

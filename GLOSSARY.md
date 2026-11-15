@@ -27,12 +27,15 @@ _Avoid_: Provider, hook, integration
 **Loop**:
 The code that repeatedly makes the model call and the tool calls and feeds the results back into the core, until it stops. The host writes its own or uses the one the library optionally ships. The library has no notion of a run or session that ends: stopping is the loop's choice, and for a host-written loop it is the host not calling again.
 _Avoid_: Session, run, driver, runner, orchestrator
-_Avoid_: Driver, runner, orchestrator
 
 **State**:
 The owned, serialisable data, message history included, that goes into and comes out of every core call. The host can read and build it; the core keeps nothing between calls and only appends to the history.
 _Avoid_: Context, memory, snapshot
 
-**Adapter**:
-An optional piece outside the core that turns an outside service into a capability, such as the OpenRouter adapter.
-_Avoid_: Provider layer, driver, connector
+**Transport**:
+The capability that carries one HTTP request, as data, to a model service and returns the status, the headers and a stream of bytes. The host registers it; the library ships an optional one outside the core.
+_Avoid_: HTTP client, connector, adapter
+
+**Exchange**:
+The core code that runs one model call over a Transport: it sends the codec's request, decodes the reply and maps failures to the library's error.
+_Avoid_: Driver, client, adapter

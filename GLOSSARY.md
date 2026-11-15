@@ -39,3 +39,7 @@ _Avoid_: HTTP client, connector, adapter
 **Exchange**:
 The core code that runs one model call over a Transport: it sends the codec's request, decodes the reply and maps failures to the library's error.
 _Avoid_: Driver, client, adapter
+
+**Offloader**:
+The capability that runs a callback which blocks on a thread of the host's choosing, so that it cannot stall the run's other callbacks or the host's own thread. The host registers it; the library ships an optional one outside the core.
+_Avoid_: Runner, thread pool, executor
